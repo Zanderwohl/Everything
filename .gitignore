@@ -1,0 +1,12 @@
+.idea/
+__pycache__
+backup/
+2020-02-10.txt
+everything.bat
+everything_open.bat
+everything_todo.bat
+everything_todo_day.bat
+everything_todo_week.bat
+output.txt
+test.txt
+*.pyc
