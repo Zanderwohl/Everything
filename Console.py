@@ -10,7 +10,7 @@ import SymbolTree
 from operator import methodcaller
 
 saved = True    # This changes. I'll allow it, since it's file I/O
-debug = False   # This should never change.
+debug = False   # This should never change during program operation.
 loop = True     # This is a sentinel. Find a better way to do this.
 
 
@@ -22,10 +22,6 @@ def do_save(roots_, todo_):
         file.write(content)
     saved = True
     print('Saved changes!')
-
-
-def exit_loop():
-    print('Exiting.')
 
 
 # https://stackoverflow.com/questions/517970/how-to-clear-the-interpreter-console
@@ -41,19 +37,20 @@ def do_help(args):
 
 
 def do_exit(args, roots, todo):
-    global saved, loop
+    global saved
     if saved:
-        loop = False
+        return False
     else:
         print('Not saved. Would you like to save? (yes/no)')
         save_choice = input('>')
         if save_choice == 'no':
-            loop = False
+            return False
         elif save_choice == 'yes' or save_choice == 'save':
             do_save(roots, todo)
-            loop = False
+            return False
         else:
             print('Choice not recognized. Enter command again.')
+            return True
 
 
 def get_day(roots, date_string):
@@ -105,12 +102,7 @@ def do_get(args, roots, person_manager):
 
 def do_commit(roots, todo):
     do_save(roots, todo)
-    do_exit(None, roots, todo)
-
-
-def do_flush(roots, todo, person_manager):
-    roots, person_manager = Parse.parse_everything()
-    todo = Parse.get_todo(roots)
+    return do_exit(None, roots, todo)
 
 
 def __sort_todo__(todo):
@@ -121,6 +113,7 @@ def __sort_todo__(todo):
 
 
 def do_todo(args, roots, todo, person_manager):
+    global saved
     if len(args) == 0:
         for item in todo:
             print(item.str_todo())
@@ -145,7 +138,7 @@ def do_todo(args, roots, todo, person_manager):
                 print('Retype command with item to add.')
                 return None
             print('Adding "' + args[1] + '".')
-            new_todo = SymbolTree.Tree(args[1], None)
+            new_todo = SymbolTree.Tree(args[1])
             if len(args) > 2 and DateStuff.is_date(args[2]):
                 new_todo.set_date(*DateStuff.parse_date_iso(args[2]))
             else:
@@ -157,6 +150,7 @@ def do_todo(args, roots, todo, person_manager):
             new_todo.type = 'TODO'
             todo.append(new_todo)
             __sort_todo__(todo)
+            saved = False
             # print('Cannot do this yet.')
         else:
             print('Adding to the TODO is not implemented yet.')
@@ -184,33 +178,37 @@ def do_unknown(command, args):
 
 
 def do_something(roots, todo, person_manager, command, args):
-    global debug, saved, loop
+    global debug, saved
     if command == '':
-        pass
+        return True
     elif command == 'help' or command == '?':
         do_help(args)
+        return True
     elif command == 'exit' or command == 'quit':
-        do_exit(args, roots, todo)
-    elif command == 'parse' or command == 'flush':
-        do_flush(roots, todo, person_manager)
+        return do_exit(args, roots, todo)
     elif command == 'get':
         do_get(args, roots, person_manager)
+        return True
     elif command == 'todo':
         do_todo(args, roots, todo, person_manager)
+        return True
     elif command == 'finish':
         do_finish(args, todo)
+        return True
     elif command == 'save':
         do_save(roots, todo)
+        return True
     elif command == 'commit':
-        do_commit(roots, todo)
+        return do_commit(roots, todo)
     elif command == 'clear' or command == 'clr' or command == 'cls':
         do_clear()
+        return True
     else:
         do_unknown(command, args)
+        return True
 
 
 def main(external_args=None):
-    global loop
     Parse.backup_file()
 
     roots, person_manager = Parse.parse_everything()
@@ -227,7 +225,7 @@ def main(external_args=None):
         do_something(roots, todo, person_manager, command, args)
     else:
         print('Everything Console')
-        while loop:
+        while do_something(roots, todo, person_manager, command, args):
             unprocessed_input = input('>')
             # print('from console: ' + str(unprocessed_input))
             split_input = Splitter.split(unprocessed_input)
@@ -235,7 +233,7 @@ def main(external_args=None):
             command, args = split_input[0], split_input[1:]
             if debug:
                 print(command + ' ' + str(args))
-            do_something(roots, todo, person_manager, command, args)
+            # do_something(roots, todo, person_manager, command, args)
         print('Exited Everything.')
 
 

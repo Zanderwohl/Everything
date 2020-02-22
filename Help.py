@@ -13,9 +13,6 @@ commit  Saves and instantly exits the program."""
 help_save = """
 save    Saves all changes made to the Everything file."""
 
-help_flush = """
-flush   Re-parses the Everything file, destroying any unsaved changes."""
-
 help_todo = """
 todo    Lists todo items.
         Arguments:
@@ -39,7 +36,7 @@ get     Gets various lists and aggregates.
         facts [person]  Gets facts about a specific person.
                         Requires the second argument."""
 
-help_all = 'Commands:\n' + help_help + help_exit + help_save + help_commit + help_save + help_flush + help_todo + \
+help_all = 'Commands:\n' + help_help + help_exit + help_save + help_commit + help_save + help_todo + \
     help_finish + help_get
 
 get_help = {
@@ -51,8 +48,6 @@ get_help = {
     'quit': help_exit,
     'commit': help_commit,
     'save': help_save,
-    'parse': help_flush,
-    'flush': help_flush,
     'todo': help_todo,
     'finish': help_finish,
     'get': help_get,

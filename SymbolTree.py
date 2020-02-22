@@ -23,9 +23,8 @@ def find_parent(leaves, child_index):
 
 
 class Tree:
-    def __init__(self, content, person_manager):
+    def __init__(self, content):
         self.__set_content__(content)
-        # self.person_manager = person_manager
         self.verbose = False
         self.year = 0
         self.month = 0

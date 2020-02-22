@@ -26,46 +26,59 @@ def print_facts_about_persons(person_list, person_manager):
         print(person_manager.facts_about(person) + '\n')
 
 
-def parse_everything():
-    everything_lines = None
-    # C:/Users/Latitude/OneDrive/everything.txt
-    with open(file_location) as everything_file:
-        everything_raw = everything_file.read()
-        everything_lines = everything_raw.split("\n")
-
-    person_manager = SymbolTree.PersonManager()
-
+def create_everything_list(everything_lines):
     everything_list = []
     found_todo = False
     found_first_date = False
     for line in everything_lines:
-        new_root = SymbolTree.Tree(line, person_manager)
+        new_root = SymbolTree.Tree(line)
         if new_root.type == 'Date' and found_todo:
             found_first_date = True
         if not new_root.type == "None" and found_first_date:
             everything_list.append(new_root)
         if new_root.get_content() == 'TODO:':
             found_todo = True
+    return everything_list
 
-    for i in range(len(everything_list)):
-        node = everything_list[i]
+
+def find_roots(tree_list):
+    roots = []
+    for leaf in tree_list:
+        if leaf.level == 0 and not leaf.type == 'Date':
+            roots.append(leaf)
+    return roots
+
+
+def assign_children(unchilded_list):
+    for i in range(len(unchilded_list)):
+        node = unchilded_list[i]
         if not node.level == 0:
-            parent = SymbolTree.find_parent(everything_list, i)
+            parent = SymbolTree.find_parent(unchilded_list, i)
             if parent is not None:
                 parent.add_child(node)
 
+
+def assign_dates(leaves):
     year, month, day = 0, 0, 0
-    for leaf in everything_list:
+    for leaf in leaves:
         if leaf.type == 'Date':
             year, month, day = leaf.get_date()
         else:
             leaf.set_date(year, month, day)
 
-    roots = []
-    for leaf in everything_list:
-        if leaf.level == 0 and not leaf.type == 'Date':
-            roots.append(leaf)
 
+def parse_everything():
+    everything_lines = []
+    with open(file_location) as everything_file:
+        everything_raw = everything_file.read()
+        everything_lines = everything_raw.split("\n")
+
+    everything_list = create_everything_list(everything_lines)
+    assign_children(everything_list)
+    assign_dates(everything_list)
+    roots = find_roots(everything_list)
+
+    person_manager = SymbolTree.PersonManager()
     for leaf in everything_list:
         leaf.manage_persons(person_manager)
         pass
