@@ -18,9 +18,9 @@ def split(unprocessed_input):
     args_list = [unprocessed_input[0:split_indicies[0]]]
     for i in range(len(split_indicies) - 1):
         next_arg = unprocessed_input[split_indicies[i] + 1:split_indicies[i + 1]]
-        if next_arg[0] == '"':
+        if len(next_arg) > 0 and next_arg[0] == '"':
             next_arg = next_arg[1:]
-        if next_arg[-1] == '"':
+        if len(next_arg) > 0 and next_arg[-1] == '"':
             next_arg = next_arg[:-1]
         args_list.append(next_arg)
     return args_list
